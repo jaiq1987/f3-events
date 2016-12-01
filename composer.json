@@ -1,0 +1,10 @@
+{
+	"config": {
+		"vendor-dir": "lib"
+	},
+	"require": {
+		"php": ">=5.4.0",
+		"bcosca/fatfree-core": ">=3.5.1",
+		"level-2/dice":"dev-master"
+	}
+}
