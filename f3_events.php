@@ -34,8 +34,7 @@ class F3_Events
         if ($count > 1) {
             $listeners = &$this->listeners;
             foreach ($keys as $i => $key) {
-                $n = $i;
-                if (++$n == $count) {
+                if (++$i == $count) {
                     $listeners[$key][$priority][] = $listener;
                 } else {
                     $listeners = &$listeners[$key];
