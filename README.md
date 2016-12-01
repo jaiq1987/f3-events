@@ -11,7 +11,7 @@ I thank him for that!
 And I use the concept of the ikkez library.
 
 
-Also, I had to remake some of the methods that I picked up from Fat Free Framework Base to integrate Dice DI
+Also, I had to remake some of the methods that I picked up from Fat Free Framework Base to integrate Dice DI. But you can use it without Dice without making changes :)
 
 This event system need a debug and evolution
 
