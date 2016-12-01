@@ -1,6 +1,6 @@
 # f3-events
 
-Hello everyone by Airat :)
+Hello everyone by Ayrat :)
 
 I was inspired by the Christian Knuth Event System library.
 
