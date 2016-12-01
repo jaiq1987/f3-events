@@ -34,7 +34,8 @@ class F3_Events
         if ($count > 1) {
             $listeners = &$this->listeners;
             foreach ($keys as $i => $key) {
-                if (++$i == $count) {
+                $n = $i;
+                if (++$n == $count) {
                     $listeners[$key][$priority][] = $listener;
                 } else {
                     $listeners = &$listeners[$key];
@@ -67,9 +68,9 @@ class F3_Events
 
     public function lite($event, $arguments = null, $subj = null)
     {
-        if (isset($this->listeners[$event])) {
-            krsort($this->listeners[$event]);
-            foreach ($this->listeners[$event] as $i => $listeners) {
+        if ($this->f3->exists($this->ekey.$event, $e) && !empty($e)) {
+            krsort($e);
+            foreach ($e as $i => $listeners) {
                 if (is_numeric($i) && $listeners) {
                     foreach ($listeners as $func) {
                         $out = $this->call($func, array($arguments, $subj));
