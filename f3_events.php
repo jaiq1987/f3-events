@@ -1,6 +1,6 @@
 <?php
 /*
- * Hello everyone by Airat :)
+ * Hello everyone by Ayrat :)
  *
  * I was inspired by the ikkez Event System library.
  * https://groups.google.com/d/msg/f3-framework/gKquuIu7Pxo/a81UXkVNFQAJ
