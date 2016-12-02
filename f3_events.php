@@ -26,7 +26,7 @@ class F3_Events
             $this->ekey = 'EVENTS.';
         }
         $this->listeners = &$this->f3->ref($this->ekey);
-        $this->listeners = [];
+        $this->listeners = array();
         $this->mode = $mode;
         $this->dice = $this->f3->get('Dice');
     }
@@ -36,7 +36,7 @@ class F3_Events
         if ($this->dice === null) {
             return new self($this->f3, $obj, mode);
         } else {
-            return $this->dice->create(get_class($this), [$this->f3, $obj, $mode]);
+            return $this->dice->create(get_class($this), array($this->f3, $obj, $mode));
         }
     }
 
