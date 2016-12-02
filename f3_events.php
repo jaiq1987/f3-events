@@ -17,14 +17,62 @@ class F3_Events
     protected $mode;
     protected $listeners;
 
-    public function __construct(\Base $f3, $mode = 'full')
+    public function __construct(\Base $f3, $obj = null, $mode = 'full') //$mode - if needed
     {
         $this->f3 = $f3;
-        $this->dice = $this->f3->get('Dice');
-        $this->ekey = 'EVENTS.';
+        if ($obj !== null) {
+            $this->ekey = 'EVENTS_local.'.$this->f3->hash(spl_object_hash($obj)).'.';
+        } else {
+            $this->ekey = 'EVENTS.';
+        }
         $this->listeners = &$this->f3->ref($this->ekey);
         $this->listeners = [];
         $this->mode = $mode;
+        $this->dice = $this->f3->get('Dice');
+    }
+
+    public function watch(\Base $f3, $obj = null, $mode = 'full')
+    {
+        if ($this->dice === null) {
+            return new self($f3, $obj, $mode);
+        } else {
+            return $this->dice->create('F3_Events', [$f3, $obj, $mode]);
+        }
+    }
+
+    public function unwatch($obj)
+    {
+        $this->f3->clear('EVENTS_local.'.$this->f3->hash(spl_object_hash($obj)));
+    }
+
+    public function has($event, $listener = null, $priority = null)
+    {
+        $exists = false;
+        if ($this->f3->exists($this->ekey.$event, $e) && !empty($e)) {
+            if ($listener !== null) {
+                if ($priority !== null) {
+                    if (false !== ($key = array_search($listener, $e[$priority], true))) {
+                        if (!empty($e[$priority][$key])) {
+                            $exists = true;
+                        }
+                    }
+                } else {
+                    foreach ($e as $priority => $listeners) {
+                        if (is_numeric($priority)) {
+                            if (false !== ($key = array_search($listener, $listeners, true))) {
+                                if (!empty($e[$priority][$key])) {
+                                    $exists = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                $exists = true;
+            }
+        }
+
+        return $exists;
     }
 
     public function on($event, $listener, $priority = 10)
@@ -45,23 +93,38 @@ class F3_Events
         }
     }
 
-    public function off($event = null, $listener = null)
+    public function off($event = null, $listener = null, $priority = null)
     {
         if ($event !== null) {
-            if (!isset($this->listeners[$event])) {
-                return;
-            }
-            if ($listener !== null) {
-                foreach ($this->listeners[$event] as $priority => $listeners) {
-                    if (false !== ($key = array_search($listener, $listeners, true))) {
-                        unset($this->listeners[$event][$priority][$key]);
+            if ($this->f3->exists($this->ekey.$event, $e) && !empty($e)) {
+                if ($listener !== null) {
+                    if ($priority !== null) {
+                        if (false !== ($key = array_search($listener, $e[$priority], true))) {
+                            if (!empty($e[$priority][$key])) {
+                                $this->f3->clear($this->ekey.$event.'.'.$priority.'.'.$key);
+                            }
+                        }
+                    } else {
+                        foreach ($e as $priority => $listeners) {
+                            if (is_numeric($priority)) {
+                                if (false !== ($key = array_search($listener, $listeners, true))) {
+                                    $this->f3->clear($this->ekey.$event.'.'.$priority.'.'.$key);
+                                }
+                            }
+                        }
+                        /*if ($key !== false) { // I do not know...need this there or not...
+                            $this->f3->clear($this->ekey.$event);
+                        }*/
                     }
+                } else {
+                    $this->f3->clear($this->ekey.$event);
                 }
             } else {
-                unset($this->listeners[$event]);
+                return;
             }
         } else {
-            $this->listeners = [];
+            $ek = explode('.', $this->ekey);
+            $this->f3->clear($ek[0]);
         }
     }
 
