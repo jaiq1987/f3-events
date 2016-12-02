@@ -36,7 +36,7 @@ class F3_Events
         if ($this->dice === null) {
             return new self($f3, $obj, $mode);
         } else {
-            return $this->dice->create('F3_Events', [$f3, $obj, $mode]);
+            return $this->dice->create(get_class($this), [$f3, $obj, $mode]);
         }
     }
 
