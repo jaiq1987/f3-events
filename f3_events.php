@@ -36,7 +36,12 @@ class F3_Events
         if ($this->dice === null) {
             return new self($this->f3, $obj, mode);
         } else {
-            return $this->dice->create(get_class($this), [$obj, $mode]);
+            $rule = $this->dice->getRule('*');
+            if (!empty($rule['substitutions']['Base'])) {
+                return $this->dice->create(get_class($this), [$this->f3, $obj, $mode]);
+            } else {
+                return $this->dice->create(get_class($this), [$obj, $mode]);
+            }
         }
     }
 
