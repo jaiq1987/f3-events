@@ -17,7 +17,7 @@ class F3_Events
     protected $mode;
     protected $listeners;
 
-    public function __construct(\Base $f3, $obj = null, $mode = 'full') //$mode - if needed
+    public function __construct(\Base $f3, $obj = null, $mode = 'full') //mode - if needed
     {
         $this->f3 = $f3;
         if ($obj !== null) {
@@ -31,12 +31,12 @@ class F3_Events
         $this->dice = $this->f3->get('Dice');
     }
 
-    public function watch(\Base $f3, $obj = null, $mode = 'full')
+    public function watch($obj = null, $mode = 'full')
     {
         if ($this->dice === null) {
-            return new self($f3, $obj, $mode);
+            return new self($this->f3, $obj, mode);
         } else {
-            return $this->dice->create(get_class($this), [$f3, $obj, $mode]);
+            return $this->dice->create(get_class($this), [$obj, $mode]);
         }
     }
 
