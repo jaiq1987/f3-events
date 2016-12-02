@@ -3,11 +3,15 @@ require_once 'lib/autoload.php';
 $f3 = \Base::instance();
 $f3->set('AUTOLOAD', 'modules/');
 $f3->set('DEBUG', 3);
+
+// if you do not use Dice, you can remove this piece
 $dice = new \Dice\Dice();
 $f3->set('Dice', $dice);
 $rule = ['substitutions' => ['Base' => $f3]];
 $dice->addRule('*', $rule);
 $dispatcher = $dice->create('F3_Events');
+// $dispatcher = new F3_Events($f3);
+
 $f3->set('eventD', $dispatcher);
 $n = 10000;
 $itTime = 0;
