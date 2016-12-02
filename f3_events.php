@@ -181,11 +181,12 @@ class F3_Events
 
     protected function call($listener, array $args)
     {
-        if ($this->dice === null) {
-            return $this->f3->call($listener, $args);
-        }
         if (is_string($listener)) {
-            $listener = $this->grab($listener);
+            if ($this->dice === null) {
+                $listener = $this->f3->grab($listener);
+            } else {
+                $listener = $this->grab($listener);
+            }
         }
 
         return call_user_func_array($listener, $args ? $args : array());
