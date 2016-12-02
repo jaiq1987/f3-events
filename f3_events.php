@@ -27,7 +27,7 @@ class F3_Events
         $this->mode = $mode;
     }
 
-    public function on($event, $listener, $priority = 0)
+    public function on($event, $listener, $priority = 10)
     {
         $keys = explode('.', $event);
         $count = count($keys);
