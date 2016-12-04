@@ -45,40 +45,31 @@ class F3_Events
         $this->f3->clear('EVENTS_local.'.$this->f3->hash(spl_object_hash($obj)));
     }
 
-    public function has($event, $listener = null, $priority = null)
+    public function once($event, $listener, $priority = 10, $options = array())
     {
-        $exists = false;
-        if ($this->f3->exists($this->ekey.$event, $e) && !empty($e)) {
-            if ($listener !== null) {
-                if ($priority !== null) {
-                    if (false !== ($key = array_search($listener, $e[$priority], true))) {
-                        if (!empty($e[$priority][$key])) {
-                            $exists = true;
-                        }
-                    }
-                } else {
-                    foreach ($e as $priority => $listeners) {
-                        if (is_numeric($priority)) {
-                            if (false !== ($key = array_search($listener, $listeners, true))) {
-                                if (!empty($e[$priority][$key])) {
-                                    $exists = true;
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                $exists = true;
-            }
-        }
-
-        return $exists;
+        $this->on($event, $listener, $priority, $options, true);
     }
 
-    public function on($event, $listener, $priority = 10)
+    public function on($event, $listener, $priority = 10, $options = array(), $once = false)
     {
         $keys = explode('.', $event);
         $count = count($keys);
+        if ($options) {
+            $listener = array(
+                'func' => $listener,
+                'options' => $options,
+            );
+        }
+        if ($once === true) {
+            if (is_array($listener)) {
+                $listener['once'] = true;
+            } else {
+                $listener = array(
+                    'func' => $listener,
+                    'once' => true,
+                );
+            }
+        }
         if ($count > 1) {
             $listeners = &$this->listeners;
             foreach ($keys as $i => $key) {
@@ -93,28 +84,57 @@ class F3_Events
         }
     }
 
-    public function off($event = null, $listener = null, $priority = null)
+    public function has($event, $listener = null, $priority = null) //perhaps overkill
+    {
+        $exists = false;
+        if ($this->f3->exists($this->ekey.$event, $e) && !empty($e)) {
+            if ($listener !== null) {
+                if ($priority !== null) {
+                    foreach ($e[$priority] as $i => $array) {
+                        if ($array == $listener || is_array($array) && $array['func'] == $listener) {
+                            $exists = true;
+                        }
+                    }
+                } else {
+                    foreach ($e as $priority => $listeners) {
+                        if (is_numeric($priority)) {
+                            foreach ($listeners as $i => $array) {
+                                if ($array == $listener || is_array($array) && $array['func'] == $listener) {
+                                    $exists = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                $exists = true;
+            }
+        }
+
+        return $exists;
+    }
+
+    public function off($event = null, $listener = null, $priority = null) //perhaps overkill
     {
         if ($event !== null) {
             if ($this->f3->exists($this->ekey.$event, $e) && !empty($e)) {
                 if ($listener !== null) {
                     if ($priority !== null) {
-                        if (false !== ($key = array_search($listener, $e[$priority], true))) {
-                            if (!empty($e[$priority][$key])) {
-                                $this->f3->clear($this->ekey.$event.'.'.$priority.'.'.$key);
+                        foreach ($e[$priority] as $i => $array) {
+                            if ($array == $listener || is_array($array) && $array['func'] == $listener) {
+                                $this->f3->clear($this->ekey.$event.'.'.$priority.'.'.$i);
                             }
                         }
                     } else {
                         foreach ($e as $priority => $listeners) {
                             if (is_numeric($priority)) {
-                                if (false !== ($key = array_search($listener, $listeners, true))) {
-                                    $this->f3->clear($this->ekey.$event.'.'.$priority.'.'.$key);
+                                foreach ($listeners as $i => $array) {
+                                    if ($array == $listener || is_array($array) && $array['func'] == $listener) {
+                                        $this->f3->clear($this->ekey.$event.'.'.$priority.'.'.$i);
+                                    }
                                 }
                             }
                         }
-                        /*if ($key !== false) { // I do not know...need this there or not...
-                            $this->f3->clear($this->ekey.$event);
-                        }*/
                     }
                 } else {
                     $this->f3->clear($this->ekey.$event);
@@ -128,15 +148,30 @@ class F3_Events
         }
     }
 
-    public function lite($event, $arguments = null, $subj = null)
+    public function lite($event, $arguments = null, &$context = array(), $hold = true)
     {
         if ($this->f3->exists($this->ekey.$event, $e) && !empty($e)) {
+            $expl = explode('.', $event);
+            $ev = array(
+                'name' => $event,
+                'key' => array_pop($expl),
+            );
             krsort($e);
             foreach ($e as $i => $listeners) {
                 if (is_numeric($i) && $listeners) {
-                    foreach ($listeners as $func) {
-                        $out = $this->call($func, array($arguments, $subj));
-                        if ($out === false) {
+                    foreach ($listeners as $n => $func) {
+                        if (!is_array($func)) {
+                            $func = array('func' => $func, 'options' => array());
+                            $once = false;
+                        } elseif ($func['once']) {
+                            $once = true;
+                        }
+                        $ev['options'] = $func['options'];
+                        $out = $this->call($func['func'], array($arguments, &$context, $ev));
+                        if ($once === true) {
+                            $this->f3->clear($this->ekey.$event.'.'.$i.'.'.$n);
+                        }
+                        if ($hold && $out === false) {
                             return $arguments;
                         }
                         if ($out) {
@@ -150,30 +185,30 @@ class F3_Events
         return $arguments;
     }
 
-    public function snap($event, $arguments = null, $subj = null)
+    public function snap($event, $arguments = null, &$context = array(), $hold = true)
     {
         if ($this->f3->exists($this->ekey.$event, $e) && !empty($e)) {
-            $arguments = $this->parse($e, $event, $arguments, $subj);
+            $arguments = $this->parse($e, $event, $arguments, $context, $hold);
         }
 
         return $arguments;
     }
 
-    public function emit($event, $arguments = null, $subj = null)
+    public function emit($event, $arguments = null, &$context = array(), $hold = true)
     {
         if ($this->mode == 'full') {
             if ($this->f3->exists($this->ekey.$event, $e) && !empty($e)) {
                 $ek = explode('.', $event);
-                $arguments = $this->parse($e, $event, $arguments, $subj);
+                $arguments = $this->parse($e, $event, $arguments, $context, $hold);
                 if (count($ek) > 1) {
                     $e = $this->f3->ref($this->ekey.$ek[0], false);
-                    $arguments = $this->parse($e, $ek, $arguments, $subj, true);
+                    $arguments = $this->parse($e, $ek, $arguments, $context, $hold, true);
                 }
             }
         } elseif ($this->mode == 'snap') {
-            $arguments = $this->snap($event, $arguments, $subj);
+            $arguments = $this->snap($event, $arguments, $context, $hold);
         } elseif ($this->mode == 'lite') {
-            $arguments = $this->lite($event, $arguments, $subj);
+            $arguments = $this->lite($event, $arguments, $context, $hold);
         }
 
         return $arguments;
@@ -217,24 +252,45 @@ class F3_Events
         return $func;
     }
 
-    protected function parse($e, $key, $arguments = null, $subj = null, $rev = false)
+    protected function parse($e, $key, $arguments = null, &$context = array(), $hold = true, $rev = false)
     {
+        $count = 0;
         if ($rev === true && is_array($key)) {
             array_pop($key);
             $count = count($key);
+            $impl = implode('.', $key);
+            $ev = array(
+                'name1' => $impl,
+                'key' => end($key),
+            );
             $ec = $e;
             for ($a = 1; $a < $count; ++$a) {
                 $e = $e[$key[$a]];
             }
         } else {
             $subs = array();
+            $expl = explode('.', $key);
+            $ev = array(
+                'name' => $key,
+                'key' => array_pop($expl),
+            );
         }
         krsort($e);
         foreach ($e as $i => $listeners) {
             if (is_numeric($i) && $listeners) {
-                foreach ($listeners as $func) {
-                    $out = $this->call($func, array($arguments, $subj));
-                    if ($out === false) {
+                foreach ($listeners as $n => $func) {
+                    if (!is_array($func)) {
+                        $func = array('func' => $func, 'options' => array());
+                        $once = false;
+                    } elseif ($func['once']) {
+                        $once = true;
+                    }
+                    $ev['options'] = $func['options'];
+                    $out = $this->call($func['func'], array($arguments, &$context, $ev));
+                    if ($once === true) {
+                        $this->f3->clear($this->ekey.$key.'.'.$i.'.'.$n);
+                    }
+                    if ($hold && $out === false) {
                         return $arguments;
                     }
                     if ($out) {
@@ -247,12 +303,12 @@ class F3_Events
                 }
             }
         }
-        if ($rev === true && count($key) > 1) {
-            $arguments = $this->parse($ec, $key, $arguments, $subj, $rev);
+        if ($rev === true && $count > 1) {
+            $arguments = $this->parse($ec, $key, $arguments, $context, $hold, $rev);
         } else {
             if ($subs) {
                 foreach ($subs as $sub) {
-                    $arguments = $this->parse($sub, $key, $arguments, $subj);
+                    $arguments = $this->parse($sub, $key, $arguments, $context, $hold);
                 }
             }
         }
