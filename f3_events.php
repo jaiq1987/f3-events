@@ -61,9 +61,9 @@ class F3_Events
             );
         }
         if ($once === true) {
-            if (is_array($listener)) {
+            if (is_array($listener) && !empty($listener['func'])) {
                 $listener['once'] = true;
-            } else {
+            } else  {
                 $listener = array(
                     'func' => $listener,
                     'once' => true,
@@ -255,6 +255,7 @@ class F3_Events
     protected function parse($e, $key, $arguments = null, &$context = array(), $hold = true, $rev = false)
     {
         $count = 0;
+        $once = false;
         if ($rev === true && is_array($key)) {
             array_pop($key);
             $count = count($key);
@@ -279,12 +280,21 @@ class F3_Events
         foreach ($e as $i => $listeners) {
             if (is_numeric($i) && $listeners) {
                 foreach ($listeners as $n => $func) {
-                    if (!is_array($func) || empty($func['func'])) {
+                    if (!is_array($func)) {
                         $func = array('func' => $func, 'options' => array());
-                        $once = false;
-                    } elseif ($func['once']) {
-                        $once = true;
+                    } elseif (is_array($func)) {
+                        if (!empty($func['func'])) {
+                            if (empty($func['options'])) {
+                                $func['options'] = array();
+                            }
+                            if ($func['once'] === true) {
+                                $once = true;
+                            }
+                        } else {
+                            $func = array('func' => $func, 'options' => array());
+                        }
                     }
+                    //var_dump($func);
                     $ev['options'] = $func['options'];
                     $out = $this->call($func['func'], array($arguments, &$context, $ev));
                     if ($once === true) {
