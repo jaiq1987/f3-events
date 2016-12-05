@@ -63,7 +63,7 @@ class F3_Events
         if ($once === true) {
             if (is_array($listener) && !empty($listener['func'])) {
                 $listener['once'] = true;
-            } else  {
+            } else {
                 $listener = array(
                     'func' => $listener,
                     'once' => true,
@@ -294,7 +294,6 @@ class F3_Events
                             $func = array('func' => $func, 'options' => array());
                         }
                     }
-                    //var_dump($func);
                     $ev['options'] = $func['options'];
                     $out = $this->call($func['func'], array($arguments, &$context, $ev));
                     if ($once === true) {
