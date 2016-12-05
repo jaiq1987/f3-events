@@ -279,7 +279,7 @@ class F3_Events
         foreach ($e as $i => $listeners) {
             if (is_numeric($i) && $listeners) {
                 foreach ($listeners as $n => $func) {
-                    if (!is_array($func)) {
+                    if (!is_array($func) || empty($func['func'])) {
                         $func = array('func' => $func, 'options' => array());
                         $once = false;
                     } elseif ($func['once']) {
