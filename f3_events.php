@@ -54,20 +54,21 @@ class F3_Events
     {
         $keys = explode('.', $event);
         $count = count($keys);
+        if (is_array($listener) && is_callable($listener[1])) {
+            $listener = array('id' => $listener[0], 'func' => $listener[1]);
+        }
         if ($options) {
-            $listener = array(
-                'func' => $listener,
-                'options' => $options,
-            );
+            if (is_array($listener) && !empty($listener['func'])) {
+                $listener['options'] = $options;
+            } else {
+                $listener = array('func' => $listener, 'options' => $options);
+            }
         }
         if ($once === true) {
             if (is_array($listener) && !empty($listener['func'])) {
                 $listener['once'] = true;
             } else {
-                $listener = array(
-                    'func' => $listener,
-                    'once' => true,
-                );
+                $listener = array('func' => $listener, 'once' => true);
             }
         }
         if ($count > 1) {
@@ -102,7 +103,8 @@ class F3_Events
                 if ($listener !== null) {
                     if ($priority !== null) {
                         foreach ($e[$priority] as $i => $array) {
-                            if ($array == $listener || is_array($array) && $array['func'] == $listener) {
+                            $trueArr = is_array($array);
+                            if ($array == $listener || $trueArr && $array['func'] == $listener || $trueArr && $array['id'] == $listener) {
                                 if ($delete === true) {
                                     $this->f3->clear($this->ekey.$event.'.'.$priority.'.'.$i);
                                 }
@@ -113,7 +115,8 @@ class F3_Events
                         foreach ($e as $priority => $listeners) {
                             if (is_numeric($priority)) {
                                 foreach ($listeners as $i => $array) {
-                                    if ($array == $listener || is_array($array) && $array['func'] == $listener) {
+                                    $trueArr = is_array($array);
+                                    if ($array == $listener || $trueArr && $array['func'] == $listener || $trueArr && $array['id'] == $listener) {
                                         if ($delete === true) {
                                             $this->f3->clear($this->ekey.$event.'.'.$priority.'.'.$i);
                                         }
@@ -122,6 +125,13 @@ class F3_Events
                                 }
                             }
                         }
+                    }
+                } elseif ($priority !== null) {
+                    if (!empty($e[$priority])) {
+                        if ($delete === true) {
+                            $this->f3->clear($this->ekey.$event.'.'.$priority);
+                        }
+                        $exists = true;
                     }
                 } else {
                     if ($delete === true) {
@@ -223,10 +233,7 @@ class F3_Events
             array_pop($key);
             $count = count($key);
             $impl = implode('.', $key);
-            $ev = array(
-                'name1' => $impl,
-                'key' => end($key),
-            );
+            $ev = array('name1' => $impl, 'key' => end($key));
             $ec = $e;
             for ($a = 1; $a < $count; ++$a) {
                 $e = $e[$key[$a]];
@@ -234,10 +241,7 @@ class F3_Events
         } else {
             $subs = array();
             $expl = explode('.', $key);
-            $ev = array(
-                'name' => $key,
-                'key' => array_pop($expl),
-            );
+            $ev = array('name' => $key, 'key' => array_pop($expl));
         }
         krsort($e);
         foreach ($e as $i => $listeners) {
@@ -245,7 +249,7 @@ class F3_Events
                 foreach ($listeners as $n => $func) {
                     if (!is_array($func)) {
                         $func = array('func' => $func, 'options' => array());
-                    } elseif (is_array($func)) {
+                    } else {
                         if (!empty($func['func'])) {
                             if (empty($func['options'])) {
                                 $func['options'] = array();
