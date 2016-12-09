@@ -50,7 +50,7 @@ $dispatcher->has('event', 'Class->method'); //true
 $dispatcher->has('event', 'Class->method2'); //false
 
 $dispatcher->has('event', null, 1); //true
-$dispatcher->has('event', null, 2); //true
+$dispatcher->has('event', null, 2); //false
 ```
 
 ===================
