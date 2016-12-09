@@ -30,3 +30,39 @@ At the moment, I have reproduced the full functionality Event Systems. And also 
 "once" - equivalent to "on", but after the call, the listener will be removed.
 
 Also, there are several overkills (see f3_events.php). Maybe they do not need.
+
+----------
+
+**Added**
+===================
+
+Now the "search" may be made not only by event name but also by listener and priority. I.e "has" and "off" method now have 2 more variables. This "listener" and "priority".
+
+for example:
+
+```
+$dispatcher->on('event', 'Class->method', 1);
+
+$dispatcher->has('event', 'Class->method', 1); //true
+$dispatcher->has('event', 'Class->method', 2); //false
+
+$dispatcher->has('event', 'Class->method'); //true
+$dispatcher->has('event', 'Class->method2'); //false
+
+$dispatcher->has('event', null, 1); //true
+$dispatcher->has('event', null, 2); //true
+```
+
+===================
+
+Only for anonymous functions:
+
+You can add listener to the event as an array with id and anonymous function. And search for this anonymous function by id.
+
+for example:
+
+```
+$dispatcher->on('event', array('id', function(){}));
+
+$dispatcher->has('event', 'id'); //true
+```
