@@ -18,9 +18,8 @@ class F3_Events extends Prefab
     protected $alike;
     protected $ckey;
     protected $ekey;
-    protected $listeners;
 
-    public function __construct(\Base $f3 = null, $obj = null, $mode = 'full', $alike = true)
+    public function __construct(\Base $f3 = null, $obj = null, $mode = 'full')
     {
         if ($f3 === null) {
             $this->f3 = \Base::instance();
@@ -33,7 +32,6 @@ class F3_Events extends Prefab
             $this->ckey = 'EVENTS';
         }
         $this->ekey = $this->ckey.'.';
-        $this->listeners = &$this->f3->ref($this->ckey);
         $this->dice = $this->f3->get('Dice');
         $this->config($mode, $alike);
     }
@@ -51,10 +49,7 @@ class F3_Events extends Prefab
 
     public function on($event, $listener, $priority = 10, $options = array(), $once = false)
     {
-        if ($this->alike) {
-            $this->listeners = &$this->f3->ref($this->ckey);
-        }
-        $listeners = &$this->listeners;
+        $listeners = &$this->f3->ref($this->ckey);
         $keys = explode('.', $event);
         $count = count($keys);
         if (is_array($listener) && is_callable($listener[1])) {
@@ -144,7 +139,6 @@ class F3_Events extends Prefab
             }
         } elseif ($delete === true) {
             $this->f3->clear($this->ckey);
-            $this->listeners = &$this->f3->ref($this->ckey);
             $exists = true;
         }
 
