@@ -48,12 +48,6 @@ for example:
 $dispatcher->config('full'); //full emit system
 $dispatcher->config('snap'); //cutted emit system
 $dispatcher->config('lite'); //lite emit system
-
-$dispatcher->config('full', true); // full compatible with ikkez Event System but little bit slower
-$dispatcher->config('full', false); // compatible with ikkez Event System
-// but if you directly clear EVENTS like that: $f3->clear('EVENTS');
-// you get some errors....
-// better use $dispatcher->off();
 ```
 
 ===================
