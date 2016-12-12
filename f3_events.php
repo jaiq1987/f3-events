@@ -15,7 +15,6 @@ class F3_Events extends Prefab
     protected $f3;
     protected $dice;
     protected $mode;
-    protected $alike;
     protected $ckey;
     protected $ekey;
 
@@ -33,13 +32,12 @@ class F3_Events extends Prefab
         }
         $this->ekey = $this->ckey.'.';
         $this->dice = $this->f3->get('Dice');
-        $this->config($mode, $alike);
+        $this->config($mode);
     }
 
-    public function config($mode = 'full', $alike = true) //mode - if needed and alike - it is full compatible with Event System but little bit slower
+    public function config($mode = 'full') //mode - if needed
     {
         $this->mode = $mode;
-        $this->alike = $alike;
     }
 
     public function once($event, $listener, $priority = 10, $options = array())
@@ -303,12 +301,12 @@ class F3_Events extends Prefab
         return $arguments;
     }
 
-    public function watch($obj = null, $mode = 'full', $alike = true)
+    public function watch($obj = null, $mode = 'full')
     {
         if ($this->dice === null) {
             return new self($this->f3, $obj, $mode);
         } else {
-            return $this->dice->create(get_class($this), array($this->f3, $obj, $mode, $alike));
+            return $this->dice->create(get_class($this), array($this->f3, $obj, $mode));
         }
     }
 
