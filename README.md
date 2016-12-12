@@ -68,6 +68,7 @@ $dispatcher->has('event', 'Class->method2'); //false
 $dispatcher->has('event', null, 1); //true
 $dispatcher->has('event', null, 2); //false
 ```
+off method works as has method, but removes the listener or listeners
 
 ===================
 
