@@ -17,6 +17,7 @@ class F3_Events extends Prefab
     protected $mode;
     protected $ckey;
     protected $ekey;
+    protected $rev;
 
     public function __construct(\Base $f3 = null, $obj = null, $mode = 'full')
     {
@@ -166,9 +167,10 @@ class F3_Events extends Prefab
         if ($this->mode == 'full') {
             if ($this->f3->exists($this->ekey.$event, $e) && !empty($e)) {
                 $ek = explode('.', $event);
+                $this->rev = true;
                 $arguments = $this->parse($e, $event, $arguments, $context, $hold);
-                if (count($ek) > 1) {
-                    $e = $this->f3->ref($this->ekey.$ek[0], false);
+                if (count($ek) > 1 && $this->rev === true) {
+                    $this->f3->exists($this->ekey.$ek[0], $e);
                     $arguments = $this->parse($e, $ek, $arguments, $context, $hold, true);
                 }
             }
@@ -278,6 +280,8 @@ class F3_Events extends Prefab
                 $out = $this->call($func['func'], array($arguments, &$context, $ev));
                 if ($hold && $out === false) {
                     if (empty($subK) || $rev === true) {
+                        $this->rev = false;
+
                         return $arguments;
                     } else {
                         break;
