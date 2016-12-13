@@ -17,7 +17,6 @@ class F3_Events extends Prefab
     protected $mode;
     protected $ckey;
     protected $ekey;
-    protected $rev;
 
     public function __construct(\Base $f3 = null, $obj = null, $mode = 'full')
     {
@@ -167,9 +166,9 @@ class F3_Events extends Prefab
         if ($this->mode == 'full') {
             if ($this->f3->exists($this->ekey.$event, $e) && !empty($e)) {
                 $ek = explode('.', $event);
-                $this->rev = true;
-                $arguments = $this->parse($e, $event, $arguments, $context, $hold);
-                if (count($ek) > 1 && $this->rev === true) {
+                $srev = false;
+                $arguments = $this->parse($e, $event, $arguments, $context, $hold, false, false, $srev);
+                if (count($ek) > 1 && $srev === false) {
                     $this->f3->exists($this->ekey.$ek[0], $e);
                     $arguments = $this->parse($e, $ek, $arguments, $context, $hold, true);
                 }
@@ -221,7 +220,7 @@ class F3_Events extends Prefab
         return $func;
     }
 
-    protected function parse($e, $key, $arguments = null, &$context = array(), $hold = true, $rev = false, $lite = false, $subK = null)
+    protected function parse($e, $key, $arguments = null, &$context = array(), $hold = true, $rev = false, $lite = false, &$srev = false, $subK = null)
     {
         $count = 0;
         $once = false;
@@ -279,9 +278,11 @@ class F3_Events extends Prefab
                 $ev['options'] = $func['options'];
                 $out = $this->call($func['func'], array($arguments, &$context, $ev));
                 if ($hold && $out === false) {
-                    if (empty($subK) || $rev === true) {
-                        $this->rev = false;
+                    if (empty($subK)) {
+                        $srev = true;
 
+                        return $arguments;
+                    } elseif ($rev === true) {
                         return $arguments;
                     } else {
                         break;
@@ -297,7 +298,7 @@ class F3_Events extends Prefab
         } else {
             if ($subs && $lite === false) {
                 foreach ($subs as $subK => $sub) {
-                    $arguments = $this->parse($sub, $key, $arguments, $context, $hold, $rev, $lite, $subK);
+                    $arguments = $this->parse($sub, $key, $arguments, $context, $hold, $rev, $lite, $srev, $subK);
                 }
             }
         }
