@@ -37,8 +37,20 @@ Also, there are several overkills (see f3_events.php). Maybe they do not need.
 
 ===================
 
-
 Now f3-events fully compatibility with Event System (can pass all ikkez Event System tests).
+
+===================
+
+In contrast to the Events System, you can add an array as a listener
+
+for example:
+
+```
+$dispatcher->on('event', array ('Class', 'method')); // equal to Class::method
+$dispatcher->on('event', array (new Class, 'method')); // equal to Class->method
+```
+
+===================
 
 added method config:
 
