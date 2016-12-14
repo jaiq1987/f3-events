@@ -25,7 +25,7 @@ At the moment, I have reproduced the full functionality Event Systems. And also 
 
 "lite" - a challenge only those listeners who recorded "in the same plane."
 
-"snap" - to call only those listeners who recorded "in the same plane and below"
+"snap" - to call only those listeners who recorded "in the same plane and above"
 
 "once" - equivalent to "on", but after the call, the listener will be removed.
 
