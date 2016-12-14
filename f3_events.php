@@ -10,7 +10,7 @@
  *
  * This event system need a debug and evolution
  */
-class event extends Prefab
+class F3_Events extends Prefab
 {
     protected $f3;
     protected $dice;
