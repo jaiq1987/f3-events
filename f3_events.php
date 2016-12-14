@@ -10,7 +10,7 @@
  *
  * This event system need a debug and evolution
  */
-class F3_Events extends Prefab
+class event extends Prefab
 {
     protected $f3;
     protected $dice;
@@ -155,7 +155,13 @@ class F3_Events extends Prefab
     public function snap($event, $arguments = null, &$context = array(), $hold = true)
     {
         if ($this->f3->exists($this->ekey.$event, $e) && !empty($e)) {
-            $arguments = $this->parse($e, $event, $arguments, $context, $hold);
+            $ek = explode('.', $event);
+            $srev = false;
+            $arguments = $this->parse($e, $event, $arguments, $context, $hold, false, true, $srev);
+            if (count($ek) > 1 && $srev === false) {
+                $this->f3->exists($this->ekey.$ek[0], $e);
+                $arguments = $this->parse($e, $ek, $arguments, $context, $hold, true);
+            }
         }
 
         return $arguments;
@@ -242,6 +248,7 @@ class F3_Events extends Prefab
                 $expl = explode('.', $key);
             }
             $ev = array('name' => $key, 'key' => array_pop($expl));
+            $impl = $key;
         }
         krsort($e);
         $listeners = array();
@@ -269,7 +276,7 @@ class F3_Events extends Prefab
                             $func['options'] = array();
                         }
                         if (!empty($func['once'])) {
-                            $this->f3->clear($this->ekey.$key.'.'.$func['once']);
+                            $this->f3->clear($this->ekey.$impl.'.'.$func['once']);
                         }
                     } else {
                         $func = array('func' => $func, 'options' => array());
