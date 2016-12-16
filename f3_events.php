@@ -60,7 +60,7 @@ class F3_Events extends Prefab
                 $listener = array('func' => $listener, 'options' => $options);
             }
         }
-        if ($once === true) {
+        if ($once) {
             if (is_array($listener) && !empty($listener['func'])) {
                 $listener['once'] = true;
             } else {
@@ -100,7 +100,7 @@ class F3_Events extends Prefab
                         foreach ($e[$priority] as $i => $array) {
                             $trueArr = is_array($array);
                             if ($array == $listener || $trueArr && $array['func'] == $listener || $trueArr && $array['id'] == $listener) {
-                                if ($delete === true) {
+                                if ($delete) {
                                     $this->f3->clear($this->ekey.$event.'.'.$priority.'.'.$i);
                                 }
                                 $exists = true;
@@ -112,7 +112,7 @@ class F3_Events extends Prefab
                                 foreach ($listeners as $i => $array) {
                                     $trueArr = is_array($array);
                                     if ($array == $listener || $trueArr && $array['func'] == $listener || $trueArr && $array['id'] == $listener) {
-                                        if ($delete === true) {
+                                        if ($delete) {
                                             $this->f3->clear($this->ekey.$event.'.'.$priority.'.'.$i);
                                         }
                                         $exists = true;
@@ -123,19 +123,19 @@ class F3_Events extends Prefab
                     }
                 } elseif ($priority !== null) {
                     if (!empty($e[$priority])) {
-                        if ($delete === true) {
+                        if ($delete) {
                             $this->f3->clear($this->ekey.$event.'.'.$priority);
                         }
                         $exists = true;
                     }
                 } else {
-                    if ($delete === true) {
+                    if ($delete) {
                         $this->f3->clear($this->ekey.$event);
                     }
                     $exists = true;
                 }
             }
-        } elseif ($delete === true) {
+        } elseif ($delete) {
             $this->f3->clear($this->ckey);
             $exists = true;
         }
@@ -156,9 +156,9 @@ class F3_Events extends Prefab
     {
         if ($this->f3->exists($this->ekey.$event, $e) && !empty($e)) {
             $ek = explode('.', $event);
-            $srev = false;
-            $arguments = $this->parse($e, $event, $arguments, $context, $hold, false, true, $srev);
-            if (count($ek) > 1 && $srev === false) {
+            $startRev = true;
+            $arguments = $this->parse($e, $event, $arguments, $context, $hold, false, true, $startRev);
+            if (count($ek) > 1 && $startRev) {
                 $this->f3->exists($this->ekey.$ek[0], $e);
                 $arguments = $this->parse($e, $ek, $arguments, $context, $hold, true);
             }
@@ -172,9 +172,9 @@ class F3_Events extends Prefab
         if ($this->mode == 'full') {
             if ($this->f3->exists($this->ekey.$event, $e) && !empty($e)) {
                 $ek = explode('.', $event);
-                $srev = false;
-                $arguments = $this->parse($e, $event, $arguments, $context, $hold, false, false, $srev);
-                if (count($ek) > 1 && $srev === false) {
+                $startRev = true;
+                $arguments = $this->parse($e, $event, $arguments, $context, $hold, false, false, $startRev);
+                if (count($ek) > 1 && $startRev) {
                     $this->f3->exists($this->ekey.$ek[0], $e);
                     $arguments = $this->parse($e, $ek, $arguments, $context, $hold, true);
                 }
@@ -226,11 +226,11 @@ class F3_Events extends Prefab
         return $func;
     }
 
-    protected function parse($e, $key, $arguments = null, &$context = array(), $hold = true, $rev = false, $lite = false, &$srev = false, $subK = null)
+    protected function parse($e, $key, $arguments = null, &$context = array(), $hold = true, $rev = false, $lite = false, &$startRev = true, $subK = null)
     {
         $count = 0;
         $once = false;
-        if ($rev === true && is_array($key)) {
+        if ($rev && is_array($key)) {
             array_pop($key);
             $count = count($key);
             $impl = implode('.', $key);
@@ -255,7 +255,7 @@ class F3_Events extends Prefab
         foreach ($e as $nkey => $nval) {
             if (is_numeric($nkey)) {
                 foreach ($nval as $n => $val) {
-                    if (is_array($val) && $val['once'] === true) {
+                    if (is_array($val) && $val['once']) {
                         $val['once'] = $nkey.'.'.$n;
                     }
                     $listeners[] = $val;
@@ -286,10 +286,10 @@ class F3_Events extends Prefab
                 $out = $this->call($func['func'], array($arguments, &$context, $ev));
                 if ($hold && $out === false) {
                     if (empty($subK)) {
-                        $srev = true;
+                        $startRev = false;
 
                         return $arguments;
-                    } elseif ($rev === true) {
+                    } elseif ($rev || $lite) {
                         return $arguments;
                     } else {
                         break;
@@ -300,7 +300,7 @@ class F3_Events extends Prefab
                 }
             }
         }
-        if ($rev === true && $count > 1) {
+        if ($rev && $count > 1) {
             $arguments = $this->parse($ec, $key, $arguments, $context, $hold, $rev);
         } else {
             if ($subs && $lite === false) {
