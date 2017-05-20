@@ -216,7 +216,7 @@ class F3_Events extends Prefab
                     $parts[1] = $this->dice->create($parts[1]);
                 } else {
                     $parts[1] = method_exists($parts[1], '__construct') && $args ?
-                        $this->dice->create($parts[1], $args) :
+                        $this->dice->create($parts[1], array($args)) :
                         $this->dice->create($parts[1]);
                 }
             }
