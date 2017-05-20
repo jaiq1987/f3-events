@@ -208,15 +208,15 @@ class F3_Events extends Prefab
                 user_error(sprintf(self::E_Class, $parts[1]), E_USER_ERROR);
             }
             if ($parts[2] == '->') {
-                if (is_subclass_of($parts[1], 'Prefab')) {
-                    $rule = $this->dice->getRule($parts[1]);
+                $rule = $this->dice->getRule($parts[1]);
+                if (is_subclass_of($parts[1], 'Prefab') || $rule['shared'] === true) {
                     if ($rule['shared'] !== true) {
                         $this->dice->addRule($parts[1], array('shared' => true));
                     }
                     $parts[1] = $this->dice->create($parts[1]);
                 } else {
                     $parts[1] = method_exists($parts[1], '__construct') && $args ?
-                        $this->dice->create($parts[1], array($args)) :
+                        $this->dice->create($parts[1], $args) :
                         $this->dice->create($parts[1]);
                 }
             }
