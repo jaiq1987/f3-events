@@ -192,16 +192,16 @@ class F3_Events extends Prefab
     {
         if (is_string($listener)) {
             if ($this->dice === null) {
-                $listener = $this->f3->grab($listener);
+                $listener = $this->f3->grab($listener, $args);
             } else {
-                $listener = $this->grab($listener);
+                $listener = $this->grab($listener, $args);
             }
         }
 
         return call_user_func_array($listener, $args);
     }
 
-    protected function grab($func, $args = null) // TODO
+    protected function grab($func, $args = null)
     {
         if (preg_match('/(.+)\h*(->|::)\h*(.+)/s', $func, $parts)) {
             if (!class_exists($parts[1])) {
@@ -215,7 +215,7 @@ class F3_Events extends Prefab
                     }
                     $parts[1] = $this->dice->create($parts[1]);
                 } else {
-                    $parts[1] = method_exists($parts[1], '__construct') ?
+                    $parts[1] = method_exists($parts[1], '__construct') && $args ?
                         $this->dice->create($parts[1], array($args)) :
                         $this->dice->create($parts[1]);
                 }
