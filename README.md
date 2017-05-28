@@ -45,7 +45,7 @@ In contrast to the Events System, you can add an array as a listener
 
 for example:
 
-```
+```php
 $dispatcher->on('event', array ('Class', 'method')); // equal to Class::method
 $dispatcher->on('event', array (new Class, 'method')); // equal to Class->method
 ```
@@ -56,7 +56,7 @@ added method config:
 
 for example:
 
-```
+```php
 $dispatcher->config('full'); //full emit system
 $dispatcher->config('snap'); //cutted emit system
 $dispatcher->config('lite'); //lite emit system
@@ -68,7 +68,7 @@ Now the "search" may be made not only by event name but also by listener and pri
 
 for example:
 
-```
+```php
 $dispatcher->on('event', 'Class->method', 1);
 
 $dispatcher->has('event', 'Class->method', 1); //true
@@ -90,7 +90,7 @@ You can add listener to the event as an array with id and anonymous function. An
 
 for example:
 
-```
+```php
 $dispatcher->on('event', array('id', function(){}));
 
 $dispatcher->has('event', 'id'); //true
